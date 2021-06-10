@@ -4,7 +4,13 @@ const koaBody = require("koa-body");
 const { nextTick } = require("process");
 
 const app = new Koa();
-const data = [1, 1, 1]
+const data = [{
+  id: 1,
+  name: 'Check Engine',
+  status: false,
+  created: '01.01.2021, 00:00',
+  description: 'gp to the garage and check engine',
+}]
 
 app.use(
   koaBody({
@@ -13,7 +19,22 @@ app.use(
 );
 
 app.use(async (ctx, next) => {
-  ctx.response.body = data;
+  const { method } = ctx.request.querystring;
+  console.log(method)
+  switch(method) {
+    case 'allTickets':
+      ctx.response.body = data;
+      return;
+    case `ticketById&id`:
+      const { id } = ctx.request.querystring
+      ctx.response.dody = data.filter((el) => {
+        if (el.id === id) return el;
+      });
+    default:
+      ctx.response.status = 404;
+      return;
+  }
+
   const origin = ctx.request.get("Origin");
   if (!origin) {
     return await next();
