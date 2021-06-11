@@ -1,7 +1,6 @@
 const http = require("http");
 const Koa = require("koa");
 const koaBody = require("koa-body");
-const { nextTick } = require("process");
 
 const app = new Koa();
 const data = [{
@@ -19,22 +18,6 @@ app.use(
 );
 
 app.use(async (ctx, next) => {
-  const { method } = ctx.request.querystring;
-  console.log(method)
-  switch(method) {
-    case 'allTickets':
-      ctx.response.body = data;
-      return;
-    case `ticketById&id`:
-      const { id } = ctx.request.querystring
-      ctx.response.dody = data.filter((el) => {
-        if (el.id === id) return el;
-      });
-    default:
-      ctx.response.status = 404;
-      return;
-  }
-
   const origin = ctx.request.get("Origin");
   if (!origin) {
     return await next();
@@ -47,10 +30,12 @@ app.use(async (ctx, next) => {
     try {
       return await next();
     } catch (e) {
+      console.log(e)
       e.headers = { ...e.headers, ...headers };
       throw e;
     }
   }
+  console.log(1)
   if (ctx.request.get("Access-Control-Request-Method")) {
     ctx.response.set({
       ...headers,
@@ -65,5 +50,22 @@ app.use(async (ctx, next) => {
     ctx.response.status = 204; // No content
   }
 });
+
+app.use(async(ctx, next)  => {
+  const { method } = ctx.request.query;
+  switch(method) {
+    case 'allTickets':
+      ctx.response.body = data;
+      return;
+    case `ticketById&id`:
+      const { id } = ctx.request.querystring
+      ctx.response.dody = data.filter((el) => {
+        if (el.id === id) return el;
+      });
+    default:
+      ctx.response.status = 404;
+      return;
+  }
+})
 
 const server = http.createServer(app.callback()).listen(7070);
