@@ -3,6 +3,7 @@ const Koa = require("koa");
 const koaBody = require("koa-body");
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
+const cors = require('@koa/cors')
 
 function createTicket(obj) {
   if (obj.header.length <= 0) {
@@ -37,6 +38,8 @@ app.use(
     urlencoded: true,
   })
 );
+
+app.use(cors());
 
 app.use(async (ctx, next) => {
   const origin = ctx.request.get("Origin");
