@@ -1,15 +1,36 @@
 const http = require("http");
 const Koa = require("koa");
 const koaBody = require("koa-body");
+const { v4: uuidv4 } = require('uuid');
+const moment = require('moment');
+
+function createTicket(obj) {
+  if (obj.header.length <= 0) {
+    return;
+  }
+  const id = uuidv4();
+  const time = `${moment().format('L')} ${moment().format('LT')}`
+  if (obj.text.length <= 0) {
+      return {
+          id: id,
+          status: false,
+          created: time,
+          name: obj.header
+      }
+  }
+  if (obj.text.length > 0) {
+      return {
+          id: id,
+          status: false,
+          created: time,
+          name: obj.header,
+          description: obj.text,
+      }
+  }
+}
 
 const app = new Koa();
-const data = [{
-  id: 1,
-  name: 'Check Engine',
-  status: false,
-  created: '01.01.2021, 00:00',
-  description: 'gp to the garage and check engine',
-}]
+const data = []
 
 app.use(
   koaBody({
@@ -52,16 +73,59 @@ app.use(async (ctx, next) => {
 });
 
 app.use(async(ctx, next)  => {
+  console.log(ctx.request.querystring)
   const { method } = ctx.request.query;
   switch(method) {
     case 'allTickets':
       ctx.response.body = data;
+      ctx.response.status = 200;
       return;
     case `ticketById&id`:
       const { id } = ctx.request.querystring
+      ctx.response.status = 200;
       ctx.response.dody = data.filter((el) => {
         if (el.id === id) return el;
       });
+      return;
+    case 'createTicket':
+      data.push(createTicket(ctx.request.body));
+      ctx.response.status = 200;
+      ctx.response.body = 'succes';
+      return;
+    case 'deleteTicket':
+      const el = data.filter((el) => {if (el.id === ctx.request.body.id) return el});
+      data.splice(el, 1)
+      ctx.response.status = 200;
+      ctx.response.body = 'succes';
+      return;
+    case 'changeTicket':
+      for (let i = 0; i < data.length; i += 1) {
+        if (data[i].id === ctx.request.body.id) {
+          console.log(data[i].id)
+          data[i].status = !data[i].status;
+        }
+      }
+    case 'ticketById':
+      const ticket = data.filter((el) => {
+        if (el.id === ctx.request.query.id) return el;
+      });
+      ctx.response.body = ticket;
+      ctx.response.status = 200;
+      return;
+    case 'changeTicketData':
+      console.log(ctx.request.body)
+      const b = data.filter((el) => {
+        if (el.id === ctx.request.body.id) {
+          return el;
+        }
+      });
+      const a = b[0];
+      data.splice(a, 1);
+      a.name = ctx.request.body.header;
+      a.description = ctx.request.body.text;
+      data.push(a);
+      ctx.response.status = 200;
+      return;
     default:
       ctx.response.status = 404;
       return;
