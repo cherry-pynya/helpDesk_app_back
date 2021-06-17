@@ -30,4 +30,35 @@ module.exports = class Tickets {
       });
     }
   }
+
+  getTicketbyId(id) {
+    return this.data.find((el) => {
+      if (el.id === id) return el;
+    });
+  }
+
+  deleteTicket(id) {
+    const el = this.getTicketbyId(el);
+    this.data.splice(el, 1);
+    return el;
+  }
+
+  getData() {
+    return this.data;
+  }
+
+  editTicket(id, obj) {
+    for (let i = 0; i < this.data.length; i += 1) {
+      if (this.data[i].id === id) {
+        this.data[i].description = obj.text;
+        this.data[i].name = obj.header;
+      }
+    }
+  }
+
+  changeStatus(id) {
+    for (let i = 0; i < this.data.length; i += 1) {
+      if (this.data[i].id === id) this.data[i].status = !this.data[i].status;
+    }
+  }
 };
