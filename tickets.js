@@ -38,9 +38,8 @@ module.exports = class Tickets {
   }
 
   deleteTicket(id) {
-    const el = this.getTicketbyId(el);
-    this.data.splice(el, 1);
-    return el;
+    const el = this.getTicketbyId(id);
+    this.data.splice(this.data.indexOf(el), 1);
   }
 
   getData() {

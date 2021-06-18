@@ -25,7 +25,7 @@ app.use(koaBody({ json: true, text: true, urlencoded: true }));
 
 const router = new Router();
 
-router.get("/tickets", async (ctx, next) => {
+router.get("/tickets", async (ctx) => {
   const { method } = ctx.request.query;
   if (method === "allTickets") {
     console.log("отправил все тикеты");
@@ -52,10 +52,11 @@ router.post("/tickets", async (ctx) => {
   }
 });
 
-router.delete("/tickets/:id", async (ctx, next) => {
-  const ticketId = Number(ctx.params.id);
-  // Ваш код, например, tickets.delete(ticketId);
+router.delete("/tickets/:id", async (ctx) => {
+  const { id } = ctx.request.query;
+  tickets.deleteTicket(id);
   ctx.response.status = 204;
+  console.log(`удалил тикет с id:${id}`);
 });
 
 router.put("/tickets/:id", async (ctx) => {
@@ -71,7 +72,7 @@ router.put("/tickets/:id", async (ctx) => {
   }
   if (method === 'changeStatus') {
     const { id } = ctx.request.query;
-    tickets.changeStatus(id);
+    await tickets.changeStatus(id);
     ctx.response.status = 204;
     console.log(`изменил статус тикета с id:${id}`)
   }
